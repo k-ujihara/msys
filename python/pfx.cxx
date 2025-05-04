@@ -407,7 +407,7 @@ static handle wrap_inverse(object obj) {
     PyObject *Aobj, *Aarr;
     Aobj = obj.ptr();
     if (!(Aarr = extract_3x3(Aobj)))
-        return NULL;
+        return pybind11::none();
     const double* src = (const double*)PyArray_DATA(Aarr);
     double dst[9];
     desres::msys::pfx::inverse_3x3(dst, src);
@@ -430,10 +430,10 @@ static handle wrap_svd(args _args, kwargs kwds) {
     npy_intp vdims[1] = {3};
 
     if (!PyArg_ParseTupleAndKeywords(_args.ptr(), kwds.ptr(), "O", kwlist, &Aobj))
-        return NULL;
+        return pybind11::none();
     if (!(Aarr = extract_3x3(Aobj)))
-        return NULL;
-    
+        return pybind11::none();
+
     memcpy(u,PyArray_DATA(Aarr), sizeof(u));
     desres::msys::pfx::svd_3x3(u,w,v);
     Py_DECREF(Aarr);
@@ -463,14 +463,14 @@ handle wrap_aligned_rmsd(args _args, kwargs kwds) {
     PyObject *Xobj, *Yobj, *Wobj=NULL;
     PyObject *Xarr, *Yarr, *Marr, *Warr=NULL;
     if (!PyArg_ParseTupleAndKeywords(_args.ptr(), kwds.ptr(), "OO|O", kwlist, &Xobj, &Yobj, &Wobj))
-        return NULL;
+        return pybind11::none();
     if (!(Xarr = PyArray_FromAny(
                     Xobj,
                     PyArray_DescrFromType(NPY_FLOAT64),
                     2,2,
                     NPY_C_CONTIGUOUS | NPY_ALIGNED | NPY_FORCECAST,
                     NULL)))
-        return NULL;
+        return pybind11::none();
     if (!(Yarr = PyArray_FromAny(
                     Yobj,
                     PyArray_DescrFromType(NPY_FLOAT64),
@@ -478,7 +478,7 @@ handle wrap_aligned_rmsd(args _args, kwargs kwds) {
                     NPY_C_CONTIGUOUS | NPY_ALIGNED | NPY_FORCECAST,
                     NULL))) {
         Py_DECREF(Xarr);
-        return NULL;
+        return pybind11::none();
     }
     if (Wobj && !(Warr = PyArray_FromAny(
                     Wobj,
@@ -488,7 +488,7 @@ handle wrap_aligned_rmsd(args _args, kwargs kwds) {
                     NULL))) {
         Py_DECREF(Xarr);
         Py_DECREF(Yarr);
-        return NULL;
+        return pybind11::none();
     }
     unsigned n = PyArray_DIM(Xarr,0);
     if (PyArray_DIM(Xarr,1)!=3 || PyArray_DIM(Yarr,1)!=3 ||
@@ -497,14 +497,14 @@ handle wrap_aligned_rmsd(args _args, kwargs kwds) {
         Py_DECREF(Xarr);
         Py_DECREF(Yarr);
         Py_XDECREF(Warr);
-        return NULL;
+        return pybind11::none();
     }
     if (Warr && (PyArray_DIM(Warr,0)!=n)) {
         PyErr_Format(PyExc_ValueError, "Require weights of same length as X, Y");
         Py_DECREF(Xarr);
         Py_DECREF(Yarr);
         Py_XDECREF(Warr);
-        return NULL;
+        return pybind11::none();
     }
 
     npy_intp dims[2] = {3,3};
